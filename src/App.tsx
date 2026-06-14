@@ -71,22 +71,39 @@ export default function App() {
   }, [isLoading]);
 
   // Form submit handler
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName || !formEmail || !formMessage) return;
 
     setIsFormSending(true);
-    setTimeout(() => {
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formName,
+          email: formEmail,
+          message: formMessage,
+        }),
+      });
+
+      if (!res.ok) throw new Error('Failed to send');
+
       setIsFormSending(false);
       setIsFormSent(true);
-      // Reset after brief interval
+
       setTimeout(() => {
         setIsFormSent(false);
         setFormName('');
         setFormEmail('');
         setFormMessage('');
       }, 4000);
-    }, 1200);
+    } catch (error) {
+      console.error('Contact form error:', error);
+      setIsFormSending(false);
+      alert('Failed to send message. Please try again or email me directly.');
+    }
   };
 
   const handleSudoEasterEgg = () => {
