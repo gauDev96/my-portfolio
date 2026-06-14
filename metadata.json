@@ -1,0 +1,6 @@
+{
+  "name": "Gaurab Mukherjee Portfolio",
+  "description": "Interactive terminal-inspired premium glassmorphic software engineering portfolio for Gaurab Mukherjee.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
