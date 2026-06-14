@@ -432,13 +432,16 @@ export default function App() {
                         >
                           <Github size={18} />
                         </a>
-                        <button
+                        <a
                           className="p-3 rounded-xl bg-slate-900 hover:bg-cyan-600 border border-slate-800 text-slate-400 hover:text-white hover:border-transparent transition-all flex items-center gap-2 cursor-none text-xs font-mono ml-auto font-bold uppercase tracking-wider"
                           title="Download Resume PDF"
+                          href="https://drive.google.com/uc?export=download&id=10sjFn4B6gsZ52z9BOjXNv5_xql3gvfgR"
+                          target="_blank"
+                          rel="noreferrer"
                         >
                           <Download size={14} />
                           <span>Download CV</span>
-                        </button>
+                        </a>
                       </div>
                     </div>
 
