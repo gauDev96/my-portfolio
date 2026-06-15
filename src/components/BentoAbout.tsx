@@ -3,7 +3,7 @@ import { motion, useMotionTemplate, useMotionValue } from 'motion/react';
 import { MapPin, Calendar, Award, Star, Briefcase, Compass, Languages } from 'lucide-react';
 
 export default function BentoAbout() {
-  const avatarPath = '/src/assets/images/developer_avatar_1781421433488.jpg';
+  const avatarPath = '/my_img.png';
 
   // Mouse Coordinate tracker for glowing bento lighting effect
   const mouseX = useMotionValue(0);
