@@ -173,7 +173,7 @@ export default function ProjectShowcase() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ type: 'spring', damping: 20, stiffness: 180 }}
-                  className="w-[320px] sm:w-[420px] shrink-0 snap-start bg-[#0b0f19]/70 rounded-2xl border border-slate-800 overflow-hidden glass-card flex flex-col justify-between"
+                  className="w-[calc(100vw-2rem)] sm:w-[420px] shrink-0 snap-start bg-[#0b0f19]/70 rounded-2xl border border-slate-800 overflow-hidden glass-card flex flex-col justify-between"
                   id={`project-slide-${proj.id}`}
                 >
                   
