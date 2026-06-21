@@ -147,3 +147,19 @@
   overflow-x: hidden;
   max-width: 100%;
 }
+
+.motion-safe\:animate-none {
+  -webkit-overflow-scrolling: touch;
+}
+
+section {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+@supports (-webkit-touch-callout: none) {
+  .backdrop-blur-md {
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+}

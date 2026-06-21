@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Terminal, Smartphone, Mail, Phone, MapPin, 
-  Linkedin, Github, ArrowUpRight, CheckCircle2, 
-  Sparkles, Download, MessageSquare, Code, Cpu, Flame, Command 
+import {
+  Terminal, Smartphone, Mail, Phone, MapPin,
+  Linkedin, Github, ArrowUpRight, CheckCircle2,
+  Sparkles, Download, MessageSquare, Code, Cpu, Flame, Command
 } from 'lucide-react';
 
 // Subcomponents import
@@ -51,59 +51,81 @@ export default function App() {
 
     const sectionIds = ['hero', 'about', 'skills', 'experience', 'projects', 'contact'];
     let intersectionObserver: IntersectionObserver;
+    let scrollFallbackTimer: ReturnType<typeof setTimeout>;
+
+    const getActiveSectionByScroll = () => {
+      if (isManualScrolling.current) return;
+      const scrollPosition = window.scrollY + window.innerHeight * 0.35;
+      for (const id of sectionIds) {
+        const el = document.getElementById(id);
+        if (el) {
+          const { offsetTop, offsetHeight } = el;
+          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+            if (id !== activeSectionRef.current) {
+              activeSectionRef.current = id;
+              setActiveSection(id);
+            }
+            break;
+          }
+        }
+      }
+    };
+
+    const handleScroll = () => {
+      if (isManualScrolling.current) return;
+      clearTimeout(scrollFallbackTimer);
+      scrollFallbackTimer = setTimeout(getActiveSectionByScroll, 80);
+    };
 
     const setupObserver = () => {
       const allFound = sectionIds.every((id) => document.getElementById(id));
       if (!allFound) return false;
 
-      let debounceTimer: ReturnType<typeof setTimeout>;
-
       intersectionObserver = new IntersectionObserver(
         (entries) => {
           if (isManualScrolling.current) return;
-          clearTimeout(debounceTimer);
-          debounceTimer = setTimeout(() => {
-            entries.forEach((entry) => {
-              if (entry.isIntersecting && entry.target.id !== activeSectionRef.current) {
-                activeSectionRef.current = entry.target.id;
-                setActiveSection(entry.target.id);
-              }
-            });
-          }, 100)
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && entry.target.id !== activeSectionRef.current) {
+              activeSectionRef.current = entry.target.id;
+              setActiveSection(entry.target.id);
+            }
+          });
         },
         {
           root: null,
-          rootMargin: '-10% 0px -55% 0px',
-          threshold: 0,
+          rootMargin: '-5% 0px -40% 0px',
+          threshold: 0.1,
         }
       );
 
       sectionIds.forEach((id) => {
-        const element = document.getElementById(id);
-        if (element) intersectionObserver.observe(element);
+        const el = document.getElementById(id);
+        if (el) intersectionObserver.observe(el);
       });
 
+      window.addEventListener('scroll', handleScroll, { passive: true });
       return true;
     };
 
-    // Try immediately first
-    if (setupObserver()) return () => intersectionObserver?.disconnect();
+    if (setupObserver()) {
+      return () => {
+        intersectionObserver?.disconnect();
+        window.removeEventListener('scroll', handleScroll);
+        clearTimeout(scrollFallbackTimer);
+      };
+    }
 
-    // If not ready, watch DOM until sections appear
     const mutationObserver = new MutationObserver(() => {
-      if (setupObserver()) {
-        mutationObserver.disconnect();
-      }
+      if (setupObserver()) mutationObserver.disconnect();
     });
 
-    mutationObserver.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
 
     return () => {
       mutationObserver.disconnect();
       intersectionObserver?.disconnect();
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(scrollFallbackTimer);
     };
   }, [isLoading]);
 
@@ -154,13 +176,13 @@ export default function App() {
     const element = document.getElementById(id);
     if (element) {
       isManualScrolling.current = true;
-      clearTimeout(manualScrollTimer.current); 
+      clearTimeout(manualScrollTimer.current);
       setActiveSection(id);
-      activeSectionRef.current = id; 
+      activeSectionRef.current = id;
       element.scrollIntoView({ behavior: 'smooth' });
       manualScrollTimer.current = setTimeout(() => {
         isManualScrolling.current = false;
-      }, 1200);   
+      }, 1200);
     }
   };
 
@@ -180,7 +202,7 @@ export default function App() {
     if (isLoading) return;
     let timer: NodeJS.Timeout;
     const currentFullText = typewriterTitles[typewriterIndex];
-    
+
     const tick = () => {
       setDisplayedText((prev) => {
         if (isDeleting) {
@@ -236,8 +258,8 @@ export default function App() {
             <CustomCursor />
 
             {/* Custom Navigation */}
-            <Navbar 
-              onOpenCommandPalette={() => setIsCommandPaletteOpen(true)} 
+            <Navbar
+              onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
               activeSection={activeSection}
               onNavigate={scrollToSection}
             />
@@ -280,15 +302,15 @@ export default function App() {
             </AnimatePresence>
 
             {/* ----------------- SECTION 1: HERO CONTAINER ----------------- */}
-            <section 
-              id="hero" 
+            <section
+              id="hero"
               className="min-h-screen flex items-center justify-center pt-28 pb-16 px-4 relative overflow-hidden"
             >
               <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                
+
                 {/* Left column info */}
                 <div className="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left gap-6" id="hero-left-metrics">
-                  
+
                   {/* Status Indicator Pill */}
                   <div className="inline-flex items-center gap-2 p-1.5 px-3 rounded-full bg-slate-950/70 border border-slate-900 border-b-2 font-mono text-xs text-cyan-400/90 select-none">
                     <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping inline-block" />
@@ -303,7 +325,7 @@ export default function App() {
                         Interactive Apps
                       </span>
                     </h1>
-                    
+
                     {/* Blinking typewriter subline */}
                     <div className="h-8 flex items-center justify-center lg:justify-start">
                       <span className="text-sm sm:text-lg font-mono text-slate-400">
@@ -328,7 +350,7 @@ export default function App() {
                       <Code size={14} />
                       <span>Browse Store Apps</span>
                     </button>
-                    
+
                     <button
                       onClick={() => scrollToSection('contact')}
                       className="px-6 py-3 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-300 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 cursor-none hover:text-white hover:bg-slate-900 transition-all"
@@ -350,7 +372,7 @@ export default function App() {
                 {/* Right column dashboard mock indicators */}
                 <div className="lg:col-span-5 w-full max-w-md mx-auto" id="hero-right-visuals">
                   <div className="relative rounded-2xl border border-slate-800 bg-slate-950/45 p-6 backdrop-blur-xl flex flex-col gap-6 tracking-wide select-none">
-                    
+
                     {/* Floating decoration lights */}
                     <div className="absolute top-2 right-2 flex gap-1.5">
                       <span className="w-2.5 h-2.5 rounded-full bg-red-500/40" />
@@ -365,8 +387,8 @@ export default function App() {
                     {/* Numeric stats layout (Achievements completed) */}
                     <div className="grid grid-cols-2 gap-4">
                       {achievementsData.map((stat) => (
-                        <div 
-                          key={stat.title} 
+                        <div
+                          key={stat.title}
                           className="bg-slate-950/50 p-4 rounded-xl border border-slate-900 flex flex-col gap-1 transition-colors hover:border-slate-800"
                         >
                           <span className="text-[10px] font-mono text-slate-500 leading-tight block">{stat.title}</span>
@@ -411,7 +433,7 @@ export default function App() {
               <div className="absolute left-1/3 bottom-0 w-[450px] h-[450px] bg-gradient-to-tr from-cyan-600/5 to-transparent rounded-full blur-[140px] pointer-events-none" />
 
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                
+
                 {/* Header */}
                 <div className="mb-16 text-center" id="contact-heading">
                   <div className="flex items-center gap-2 justify-center mb-2">
@@ -428,12 +450,12 @@ export default function App() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start" id="contact-panel-wrapper">
-                  
+
                   {/* Left Column: Direct Info */}
                   <div className="lg:col-span-5 flex flex-col gap-6 lg:h-full justify-between">
-                    
+
                     <div className="flex flex-col gap-6">
-                      
+
                       {/* Email Card */}
                       <div className="p-5 rounded-2xl bg-slate-950/50 border border-slate-900 backdrop-blur-md flex items-center gap-4 group hover:border-slate-800 transition-colors">
                         <div className="w-10 h-10 rounded-xl bg-blue-950/20 border border-blue-900/30 flex items-center justify-center text-blue-400 shrink-0">
@@ -511,7 +533,7 @@ export default function App() {
 
                   {/* Right Column: Interactive Glass Message Form */}
                   <div className="lg:col-span-7" id="contact-form-panel">
-                    <form 
+                    <form
                       onSubmit={handleFormSubmit}
                       className="bg-[#0b0f19]/60 border border-slate-800 rounded-2xl p-6 md:p-8 backdrop-blur-xl relative flex flex-col gap-6"
                     >
@@ -574,11 +596,10 @@ export default function App() {
                         <button
                           type="submit"
                           disabled={isFormSending || isFormSent}
-                          className={`w-full sm:w-auto px-6 py-3 rounded-xl text-xs font-mono font-bold uppercase tracking-wider cursor-none flex items-center justify-center gap-2 border transition-all ${
-                            isFormSent
+                          className={`w-full sm:w-auto px-6 py-3 rounded-xl text-xs font-mono font-bold uppercase tracking-wider cursor-none flex items-center justify-center gap-2 border transition-all ${isFormSent
                               ? 'bg-emerald-950/20 border-emerald-500 text-emerald-400'
                               : 'bg-slate-900 border-slate-800 text-slate-100 hover:bg-slate-800 hover:text-white hover:border-cyan-500/20'
-                          }`}
+                            }`}
                         >
                           {isFormSending ? (
                             <>
@@ -610,7 +631,7 @@ export default function App() {
             {/* ----------------- SECT 7: FOOTER FRAME ---------------------- */}
             <footer className="bg-slate-950 border-t border-slate-900/80 py-12 relative overflow-hidden select-none" id="footer">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6 font-mono relative z-20">
-                
+
                 <div className="text-center md:text-left">
                   <div className="flex items-center gap-2 justify-center md:justify-start">
                     <span className="w-2.5 h-2.5 rounded-full bg-cyan-400" />
