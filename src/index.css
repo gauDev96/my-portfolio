@@ -11,6 +11,7 @@
   html {
     scroll-behavior: smooth;
     cursor: none; /* Disable default cursor for the custom cursor experience */
+    overflow-x: hidden;
   }
 
   body {
@@ -142,3 +143,7 @@
   animation-play-state: paused;
 }
 
+#root {
+  overflow-x: hidden;
+  max-width: 100%;
+}

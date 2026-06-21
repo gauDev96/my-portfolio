@@ -42,32 +42,69 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Intersection observer for navigation active states
+  const activeSectionRef = useRef('hero');
+  const isManualScrolling = useRef(false);
+  const manualScrollTimer = useRef<ReturnType<typeof setTimeout>>();
+
   useEffect(() => {
     if (isLoading) return;
-    const observerOptions = {
-      root: null,
-      rootMargin: '-30% 0px -40% 0px', // Trigger when section is in middle
-      threshold: 0,
-    };
 
-    const handleIntersection = (entries: IntersectionObserverEntry[]) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          setActiveSection(entry.target.id);
+    const sectionIds = ['hero', 'about', 'skills', 'experience', 'projects', 'contact'];
+    let intersectionObserver: IntersectionObserver;
+
+    const setupObserver = () => {
+      const allFound = sectionIds.every((id) => document.getElementById(id));
+      if (!allFound) return false;
+
+      let debounceTimer: ReturnType<typeof setTimeout>;
+
+      intersectionObserver = new IntersectionObserver(
+        (entries) => {
+          if (isManualScrolling.current) return;
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting && entry.target.id !== activeSectionRef.current) {
+                activeSectionRef.current = entry.target.id;
+                setActiveSection(entry.target.id);
+              }
+            });
+          }, 100)
+        },
+        {
+          root: null,
+          rootMargin: '-10% 0px -55% 0px',
+          threshold: 0,
         }
+      );
+
+      sectionIds.forEach((id) => {
+        const element = document.getElementById(id);
+        if (element) intersectionObserver.observe(element);
       });
+
+      return true;
     };
 
-    const observer = new IntersectionObserver(handleIntersection, observerOptions);
-    const sections = ['hero', 'about', 'skills', 'experience', 'projects', 'contact'];
-    
-    sections.forEach((id) => {
-      const element = document.getElementById(id);
-      if (element) observer.observe(element);
+    // Try immediately first
+    if (setupObserver()) return () => intersectionObserver?.disconnect();
+
+    // If not ready, watch DOM until sections appear
+    const mutationObserver = new MutationObserver(() => {
+      if (setupObserver()) {
+        mutationObserver.disconnect();
+      }
     });
 
-    return () => observer.disconnect();
+    mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    return () => {
+      mutationObserver.disconnect();
+      intersectionObserver?.disconnect();
+    };
   }, [isLoading]);
 
   // Form submit handler
@@ -116,7 +153,14 @@ export default function App() {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
+      isManualScrolling.current = true;
+      clearTimeout(manualScrollTimer.current); 
+      setActiveSection(id);
+      activeSectionRef.current = id; 
       element.scrollIntoView({ behavior: 'smooth' });
+      manualScrollTimer.current = setTimeout(() => {
+        isManualScrolling.current = false;
+      }, 1200);   
     }
   };
 
@@ -174,8 +218,8 @@ export default function App() {
       <div className="fixed inset-0 bg-grid-cyber opacity-[0.03] pointer-events-none z-0" />
 
       {/* Futuristic Background Moving Blobs */}
-      <div className="fixed top-1/4 left-1/4 w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[140px] pointer-events-none mix-blend-screen z-0" />
-      <div className="fixed bottom-1/4 right-1/4 w-[400px] h-[400px] bg-purple-600/5 rounded-full blur-[120px] pointer-events-none mix-blend-screen z-0" />
+      <div className="fixed top-1/4 left-1/4 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-blue-600/5 rounded-full blur-[140px] pointer-events-none mix-blend-screen z-0" />
+      <div className="fixed bottom-1/4 right-1/4 w-[200px] sm:w-[400px] h-[200px] sm:h-[400px] bg-purple-600/5 rounded-full blur-[120px] pointer-events-none mix-blend-screen z-0" />
 
       <AnimatePresence mode="wait">
         {isLoading ? (
@@ -194,7 +238,8 @@ export default function App() {
             {/* Custom Navigation */}
             <Navbar 
               onOpenCommandPalette={() => setIsCommandPaletteOpen(true)} 
-              activeSection={activeSection} 
+              activeSection={activeSection}
+              onNavigate={scrollToSection}
             />
 
             {/* Command Palette keyboard search trigger */}
